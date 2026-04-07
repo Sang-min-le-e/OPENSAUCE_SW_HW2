@@ -56,19 +56,15 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: 최신 이미지 가져오기 및 서버 재실행
-        shell: powershell
+        shell: bash
         run: |
-          Write-Host "==== Docker Hub에서 최신 이미지 당겨오는 중... ===="
+          echo "==== Docker Hub에서 최신 이미지 당겨오는 중... ===="
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
           
-          Write-Host "==== 기존에 켜져있던 컨테이너 강제 종료 및 삭제 중... ===="
-          try {
-              docker rm -f body-type-api-container 2>$null
-          } catch {
-              Write-Host "기존 컨테이너가 발견되지 않아 다음으로 진행합니다."
-          }
+          echo "==== 기존에 켜져있던 컨테이너 강제 종료 및 삭제 중... ===="
+          docker rm -f body-type-api-container || true
           
-          Write-Host "==== 새로운 컨테이너 가동 중... ===="
+          echo "==== 새로운 컨테이너 가동 중... ===="
           docker run -d --name body-type-api-container -p 8000:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
           
-          Write-Host "==== 로컬 배포 파이프라인(CD) 완료! ===="
+          echo "==== 로컬 배포 파이프라인(CD) 완료! ===="

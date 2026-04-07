@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>체형 맞춤 격투기 추천</title>
+    <!-- 토스 스타일의 핵심인 깔끔한 현대적 폰트 적용 (Pretendard) -->
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        :root {
+            --toss-blue: #3182f6;
+            --toss-blue-hover: #1b64da;
+            --bg-color: #f2f4f6;
+            --card-bg: #ffffff;
+            --text-primary: #333d4b;
+            --text-secondary: #8b95a1;
+            --radius-large: 24px;
+            --radius-medium: 16px;
+        }
+
+        body {
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-large);
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            color: #191f28;
+            word-break: keep-all;
+        }
+
+        p.desc {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            word-break: keep-all;
+        }
+
+        .upload-btn {
+            background-color: var(--toss-blue);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(49, 130, 246, 0.25);
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--toss-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(49, 130, 246, 0.35);
+        }
+        
+        .upload-btn:active {
+            transform: translateY(1px);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Loading Spinner */
+        .spinner-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px 0;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e5e8eb;
+            border-top: 5px solid var(--toss-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner-text {
+            font-size: 17px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .preview-wrap {
+            display: none;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            border: 1px solid #e5e8eb;
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .preview-label {
+            margin: 0 0 8px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #f2f4f6;
+        }
+
+        .upload-error {
+            display: none;
+            margin-top: 12px;
+            color: #d14343;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        /* Result Section */
+        .result-container {
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+            margin-top: 10px;
+        }
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-box {
+            background-color: var(--toss-blue);
+            border-radius: var(--radius-large);
+            padding: 30px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(49, 130, 246, 0.2);
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            color: #ffffff;
+        }
+
+        .result-reason {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            word-break: keep-all;
+            background-color: rgba(0, 0, 0, 0.15);
+            padding: 18px;
+            border-radius: 16px;
+            text-align: left;
+        }
+
+        .btn-retry {
+            width: 100%;
+            background-color: #f2f4f6;
+            color: #4e5968;
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-retry:hover {
+            background-color: #e5e8eb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-card">
+        <div id="initial-view">
+            <h1>체형에 잘 맞는 격투기 추천</h1>
+            <p class="desc">전신이 나온 사진을 업로드하면 AI가 체형을 분석해 가장 잘 맞는 종목을 추천해 드려요.</p>
+
+            <button class="upload-btn" onclick="document.getElementById('file-input').click();">
+                📸 사진 업로드하기
+            </button>
+            <input type="file" id="file-input" accept="image/*" onchange="handleFiles(this.files)">
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">사진 파일은 분석 후 즉시 파기됩니다.</p>
+            <p id="upload-error" class="upload-error"></p>
+        </div>
+
+        <div class="spinner-container" id="loading-view">
+            <div class="spinner"></div>
+            <div class="spinner-text">AI가 체형을 꼼꼼히 분석 중이에요...</div>
+        </div>
+
+        <div class="preview-wrap" id="preview-wrap">
+            <p class="preview-label">업로드한 사진</p>
+            <img id="preview-image" class="preview-image" alt="업로드한 이미지 미리보기">
+        </div>
+
+        <div class="result-container" id="result-view">
+            <h1 style="text-align: center; margin-bottom: 24px;">분석 완료!</h1>
+            
+            <div class="result-box">
+                <div class="result-label">나의 체형 🔍</div>
+                <h2 class="result-title" id="res-body-type">근육질 체형</h2>
+                
+                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.2); margin: 24px 0;">
+                
+                <div class="result-label">강력 추천 격투기 🥊</div>
+                <h2 class="result-title" id="res-martial-art" style="font-size: 42px; color: #ffe812; letter-spacing: -1px;">레슬링</h2>
+                
+                <div style="height: 20px;"></div>
+                <p class="result-reason" id="res-reason">이유가 여기에 표시됩니다.</p>
+            </div>
+
+            <button class="btn-retry" onclick="resetView()">다른 사진으로 다시하기</button>
+        </div>
+    </div>
+
+    <script>
+        async function handleFiles(files) {
+            const file = files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 올려주세요!');
+                return;
+            }
+            const uploadError = document.getElementById('upload-error');
+            uploadError.style.display = 'none';
+            uploadError.innerText = '';
+
+            const previewWrap = document.getElementById('preview-wrap');
+            const previewImage = document.getElementById('preview-image');
+            const previewUrl = URL.createObjectURL(file);
+            previewImage.src = previewUrl;
+            previewImage.onload = () => URL.revokeObjectURL(previewUrl);
+            previewImage.onerror = () => URL.revokeObjectURL(previewUrl);
+            previewWrap.style.display = 'block';
+
+            // 분석 중 화면으로 전환
+            document.getElementById('initial-view').style.display = 'none';
+            document.getElementById('loading-view').style.display = 'flex';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // API 호츨 부분
+                const response = await fetch('/predict/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    const detail = errData.detail || '분석 중 오류가 발생했습니다.';
+                    throw new Error(detail);
+                }
+                const data = await response.json();
+                
+                // 결과 데이터 삽입
+                document.getElementById('res-body-type').innerText = data.body_type;
+                document.getElementById('res-martial-art').innerText = data.recommendation.martial_art;
+                document.getElementById('res-reason').innerText = data.recommendation.reason;
+                
+                // 부드러운 전환을 위해 약간의 딜레이
+                setTimeout(() => {
+                    document.getElementById('loading-view').style.display = 'none';
+                    document.getElementById('result-view').style.display = 'block';
+                }, 1000); 
+                
+            } catch (error) {
+                uploadError.innerText = `${error.message}\n다른 사진으로 다시 업로드해 주세요.`;
+                uploadError.style.display = 'block';
+                resetView();
+            }
+            
+            // Input 초기화
+            document.getElementById('file-input').value = '';
+        }
+
+        function resetView() {
+            document.getElementById('result-view').style.display = 'none';
+            document.getElementById('loading-view').style.display = 'none';
+            document.getElementById('preview-wrap').style.display = 'none';
+            document.getElementById('preview-image').src = '';
+            document.getElementById('initial-view').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

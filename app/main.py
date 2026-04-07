@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from app.ml.model import analyze_body_type, recommend_martial_arts
@@ -10,18 +11,10 @@ app = FastAPI(
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    return """
-    <html>
-        <head>
-            <title>몸매 기반 격투기 추천</title>
-        </head>
-        <body>
-            <h1>몸매 기반 격투기 추천 API 서버</h1>
-            <p>서버가 정상적으로 실행 중입니다.</p>
-            <p>API 문서는 <a href="/docs">/docs</a>에서 확인하실 수 있습니다.</p>
-        </body>
-    </html>
-    """
+    # 저장해둔 디자인 파일(index.html)을 불러와서 화면에 보여주기
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        return f.read()
 
 @app.post("/predict/")
 async def predict_martial_arts(file: UploadFile = File(...)):
