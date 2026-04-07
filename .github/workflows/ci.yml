@@ -56,7 +56,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: 최신 이미지 가져오기 및 서버 재실행
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "==== Docker Hub에서 최신 이미지 당겨오는 중... ===="
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
