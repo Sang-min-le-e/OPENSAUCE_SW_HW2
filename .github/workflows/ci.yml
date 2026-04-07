@@ -55,19 +55,20 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: 최신 구동 환경으로 서버 재실행 시키기
-        # Windows Runner에서 문법/명령어 호환성을 보장하기 위해 bash 쉘 사용을 강제합니다.
-        shell: bash
+      - name: 최신 이미지 가져오기 및 서버 재실행
+        shell: pwsh
         run: |
-          echo "==== Docker Hub에서 최신 이미지 당겨오는 중... ===="
+          Write-Host "==== Docker Hub에서 최신 이미지 당겨오는 중... ===="
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
           
-          echo "==== 기존에 켜져있던 컨테이너 프로세스 끄고 삭제하는 중... ===="
-          # 에러(기존 컨테이너가 없을 경우)가 발생해도 무시하고 다음 명령어로 넘어가게(true) 합니다.
-          docker stop body-type-api-container || true
-          docker rm body-type-api-container || true
+          Write-Host "==== 기존에 켜져있던 컨테이너 강제 종료 및 삭제 중... ===="
+          try {
+              docker rm -f body-type-api-container 2>$null
+          } catch {
+              Write-Host "기존 컨테이너가 발견되지 않아 다음으로 진행합니다."
+          }
           
-          echo "==== 새로운 컨테이너 가동 중... ===="
+          Write-Host "==== 새로운 컨테이너 가동 중... ===="
           docker run -d --name body-type-api-container -p 8000:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
           
-          echo "==== 로컬에서의 새로운 버전 배포 완료! ===="
+          Write-Host "==== 로컬 배포 파이프라인(CD) 완료! ===="
