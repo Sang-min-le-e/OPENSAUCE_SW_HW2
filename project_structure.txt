@@ -1,0 +1,20 @@
+OPENSAUCE_SW_HW2/
+│
+├── app/
+│   ├── __init__.py
+│   ├── main.py            # FastAPI 애플리케이션 진입점 및 API 라우터
+│   └── ml/
+│       ├── __init__.py
+│       └── model.py       # 가벼운 모델 로드 및 추론(Inference) 로직
+│
+├── models/                # 실제 학습된 모델 가중치 파일(.pt, .onnx 등)을 저장하는 폴더
+│   └── dummy_model.txt    # (예시용)
+│
+├── .github/               # GitHub Actions CI/CD 설정 파일
+│   └── workflows/
+│       └── ci.yml         # 코드 푸시 시 Docker Hub 빌드/푸시 파이프라인
+│
+├── Dockerfile             # 배포 최적화된 Docker 이미지 빌드 스크립트
+├── .dockerignore          # Docker 빌드 불필요 파일 제외 목록
+├── requirements.txt       # 필요한 파이썬 패키지 목록
+└── project_structure.txt  # 프로젝트 구조 설명 파일 (현재 파일)
