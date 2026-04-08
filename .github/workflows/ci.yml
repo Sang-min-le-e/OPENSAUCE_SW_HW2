@@ -9,10 +9,10 @@ on:
       - main
 
 jobs:
-  docker-build-push:
-    name: docker-build-push
-    runs-on: self-hosted
-
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,36 +37,47 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  deploy:
+    name: Deploy to Local Self-Hosted Runner
+    needs: build-and-push
+    runs-on: self-hosted
+    if: github.event_name != 'pull_request'
+    
+    steps:
       - name: Deploy to Local Server
-        if: github.event_name != 'pull_request'
-        shell: bash
+        shell: powershell
         run: |
-          echo "==== Pull latest Docker image ===="
+          Write-Host "==== Pull latest Docker image ===="
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
 
-          echo "==== Remove previous container if exists ===="
-          docker rm -f body-type-api-container || true
+          Write-Host "==== Remove previous container if exists ===="
+          try {
+              docker rm -f body-type-api-container 2>$null
+          } catch {
+              Write-Host "No previous container found."
+          }
 
-          echo "==== Run new container ===="
+          Write-Host "==== Run new container ===="
           docker run -d --name body-type-api-container -p 8000:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/body-type-api:latest
 
-          echo "==== Deploy completed ===="
+          Write-Host "==== Deploy completed ===="
 
       - name: Write checklist to summary
-        shell: bash
+        shell: powershell
         run: |
-          {
-            echo "## Check your repository Actions"
-            echo ""
-            echo "- [ ] **Build and Push Docker Image** job가 성공했는지 확인"
-            echo "- [ ] **Deploy to Local Server** step이 성공했는지 확인 (PR이면 배포 스킵)"
-            echo "- [ ] 로컬에서 \`http://127.0.0.1:8000\` 접속 후 \`Ctrl + F5\`"
-            echo "- [ ] 사람 사진 업로드 → 정상 결과"
-            echo "- [ ] 사람 미검출 사진 업로드 → 에러 메시지 + 재업로드 유도"
-            echo ""
-            echo "### Where to look when deploy fails"
-            echo "- \`docker: command not found\`: 러너에 Docker 설치/PATH 확인"
-            echo "- \`pull access denied\`: Docker Hub 시크릿/권한 확인"
-            echo "- \`port is already allocated\`: 8000 포트 충돌 확인"
-            echo "- 컨테이너 로그: \`docker logs body-type-api-container\`"
-          } >> \"$GITHUB_STEP_SUMMARY\"
+          $summary = @"
+          ## Check your repository Actions
+          
+          - [x] **Build and Push Docker Image** job가 성공했는지 확인
+          - [x] **Deploy to Local Server** step이 성공했는지 확인 (PR이면 배포 스킵)
+          - [ ] 로컬에서 http://127.0.0.1:8000 접속 후 Ctrl + F5
+          - [ ] 사람 사진 업로드 → 정상 결과
+          - [ ] 사람 미검출 사진 업로드 → 에러 메시지 + 재업로드 유도
+          
+          ### Where to look when deploy fails
+          - docker command not found: 러너에 Docker 설치/PATH 확인
+          - pull access denied: Docker Hub 시크릿/권한 확인
+          - port is already allocated: 8000 포트 충돌 확인
+          - 컨테이너 로그: docker logs body-type-api-container
+          "@
+          Out-File -FilePath $env:GITHUB_STEP_SUMMARY -InputObject $summary -Append -Encoding utf8
